@@ -19,7 +19,7 @@ import {
   UrlReader,
   resolveSafeChildPath,
 } from '@backstage/backend-common';
-import { JsonObject, JsonValue } from '@backstage/types';
+import { JsonObject } from '@backstage/types';
 import { ScmIntegrations } from '@backstage/integration';
 import commandExists from 'command-exists';
 import fs from 'fs-extra';
