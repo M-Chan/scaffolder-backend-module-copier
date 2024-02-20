@@ -38,20 +38,6 @@ export class CopierRunner {
     this.containerRunner = containerRunner;
   }
 
-  private async fetchTemplateCopier(
-    directory: string,
-  ): Promise<Record<string, JsonValue>> {
-    try {
-      return await fs.readJSON(path.join(directory, 'copier.json'));
-    } catch (ex) {
-      if (typeof ex === "object" && ex && "code" in ex && ex.code !== 'ENOENT') {
-        throw ex;
-      }
-
-      return {};
-    }
-  }
-
   public async run({
     workspacePath,
     values,
