@@ -71,18 +71,6 @@ export class CopierRunner {
     await fs.ensureDir(intermediateDir);
     const resultDir = path.join(workspacePath, 'result');
 
-    // First lets grab the default copier.json file
-    const copierJson = await this.fetchTemplateCopier(
-      templateContentsDir,
-    );
-
-    const copierInfo = {
-      ...copierJson,
-      ...values,
-    };
-
-    await fs.writeJSON(path.join(templateDir, 'copier.json'), copierInfo);
-
     // Directories to bind on container
     const mountDirs = {
       [templateDir]: '/input',
