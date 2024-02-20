@@ -95,12 +95,11 @@ export class CopierRunner {
       copierValues.push("--data")
       copierValues.push(key + "=" + value)
     }
-    const templateSource = templateDir+"/copier"
     const projectDestination = intermediateDir+"/copier"
     if (copierInstalled) {
       await executeShellCommand({
         command: 'copier',
-        args: ['copy', ...copierValues, templateSource, projectDestination, '--trust'],
+        args: ['copy', ...copierValues, templateContentsDir, projectDestination, '--trust'],
         logStream,
       });
     } else {
@@ -191,6 +190,7 @@ export function createFetchCopierAction(options: {
       ctx.logger.info('Fetching and then templating using copier');
       const workDir = await ctx.createTemporaryDirectory();
       const templateDir = resolvePath(workDir, 'template');
+      const templateLocation = ctx.input.url;
       const templateContentsDir = resolvePath(
         templateDir,
         "copier", 
@@ -216,7 +216,7 @@ export function createFetchCopierAction(options: {
         values: values,
         imageName: ctx.input.imageName,
         templateDir: templateDir,
-        templateContentsDir: templateContentsDir,
+        templateContentsDir: templateLocation,
       });
 
       const targetPath = ctx.input.targetPath ?? './';
