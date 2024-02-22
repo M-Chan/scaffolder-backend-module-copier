@@ -82,29 +82,11 @@ export class CopierRunner {
       copierValues.push(key + "=" + value)
     }
     const projectDestination = intermediateDir+"/copier"
-    if (copierInstalled) {
-      await executeShellCommand({
-        command: 'copier',
-        args: ['copy', ...copierValues, templateContentsDir, projectDestination, '--trust'],
-        logStream,
-      });
-    } else {
-      if (this.containerRunner === undefined) {
-        throw new Error(
-          'Invalid state: containerRunner cannot be undefined when copier is not installed',
-        );
-      }
-
-      await this.containerRunner.runContainer({
-        imageName: imageName ?? 'tobiasestefors/copier:7.0.1',
-        command: 'copier',
-        args: [...copierValues, '/input', '/output'],
-        mountDirs, 
-        workingDir: '/input',
-        envVars: { HOME: '/tmp' },
-        logStream,
-      });
-    }
+    await executeShellCommand({
+      command: 'copier',
+      args: ['copy', ...copierValues, templateContentsDir, projectDestination, '--trust'],
+      logStream,
+    });
 
     const [generated] = await fs.readdir(intermediateDir);
     console.log(generated)
