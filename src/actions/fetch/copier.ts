@@ -57,17 +57,6 @@ export class CopierRunner {
     await fs.ensureDir(intermediateDir);
     const resultDir = path.join(workspacePath, 'result');
 
-    // Directories to bind on container
-    const mountDirs = {
-      [templateDir]: '/input',
-      [intermediateDir]: '/output',
-    };
-
-    // the command-exists package returns `true` or throws an error
-    const copierInstalled = await commandExists('copier').catch(
-      () => false,
-    );
-
     let copierValues: string[] = []
     console.log(values) 
     let destValues = values['destination']
