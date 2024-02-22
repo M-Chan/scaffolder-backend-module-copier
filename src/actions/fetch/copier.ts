@@ -20,7 +20,6 @@ import {
 } from '@backstage/backend-common';
 import { JsonObject } from '@backstage/types';
 import { ScmIntegrations } from '@backstage/integration';
-import commandExists from 'command-exists';
 import fs from 'fs-extra';
 import path, { resolve as resolvePath } from 'path';
 import { Writable } from 'stream';
@@ -35,8 +34,6 @@ export class CopierRunner {
     workspacePath,
     values,
     logStream,
-    imageName,
-    templateDir,
     templateContentsDir,
   }: {
     workspacePath: string;
