@@ -81,7 +81,6 @@ describe('fetch:copier', () => {
 
   const action = createFetchCopierAction({
     integrations,
-    containerRunner,
     reader: mockReader,
   });
 
