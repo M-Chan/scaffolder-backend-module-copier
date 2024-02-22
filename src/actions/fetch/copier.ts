@@ -15,7 +15,6 @@
  */
 
 import {
-  ContainerRunner,
   UrlReader,
   resolveSafeChildPath,
 } from '@backstage/backend-common';
@@ -32,12 +31,6 @@ import {
 } from '@backstage/plugin-scaffolder-node'
 
 export class CopierRunner {
-  private readonly containerRunner?: ContainerRunner;
-
-  constructor({ containerRunner }: { containerRunner?: ContainerRunner }) {
-    this.containerRunner = containerRunner;
-  }
-
   public async run({
     workspacePath,
     values,
@@ -99,9 +92,8 @@ export class CopierRunner {
 export function createFetchCopierAction(options: {
   reader: UrlReader;
   integrations: ScmIntegrations;
-  containerRunner?: ContainerRunner;
 }) {
-  const { reader, containerRunner, integrations } = options;
+  const { reader, integrations } = options;
 
   return createTemplateAction<{
     url: string;
@@ -162,7 +154,7 @@ export function createFetchCopierAction(options: {
         outputPath: templateContentsDir,
       });
 
-      const copier = new CopierRunner({ containerRunner });
+      const copier = new CopierRunner();
       const values = {
         ...ctx.input.values 
       };
