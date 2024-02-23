@@ -10,24 +10,20 @@ You need to configure the action in your backend:
 
 ```bash
 # From your Backstage root directory
-yarn add --cwd packages/backend @backstage/plugin-scaffolder-backend-module-copier
+yarn add --cwd packages/backend https://github.com/DiamondLightSource/scaffolder-backend-module-copier.git
 ```
 
-Configure the action:
+Configure the action within `packages/backend/src/plugins/scaffolder.ts`:
 (you can check the [docs](https://backstage.io/docs/features/software-templates/writing-custom-actions#registering-custom-actions) to see all options):
 
 ```typescript
-// packages/backend/src/plugins/scaffolder.ts
-
 import { CatalogClient } from '@backstage/catalog-client';
-import { createRouter } from '@backstage/plugin-scaffolder-backend';
-import { createFetchCopierAction } from '@backstage/plugin-scaffolder-backend-module-copier';
-import { createBuiltinActions } from '@backstage/plugin-scaffolder-backend';
 import { ScmIntegrations } from '@backstage/integration';
-import Docker from 'dockerode';
-import { DockerContainerRunner } from '@backstage/backend-common';
-
-
+import {
+  createBuiltinActions,
+  createRouter,
+} from '@backstage/plugin-scaffolder-backend';
+import { createFetchCopierAction } from '@backstage/plugin-scaffolder-backend-module-copier';
 import { Router } from 'express';
 import type { PluginEnvironment } from '../types';
 
@@ -38,18 +34,19 @@ export default async function createPlugin(
     discoveryApi: env.discovery,
   });
   const integrations = ScmIntegrations.fromConfig(env.config);
-  const dockerClient = new Docker();
-  const containerRunner = new DockerContainerRunner({ dockerClient });
-
+  
   const builtInActions = createBuiltinActions({
     integrations,
     catalogClient,
     config: env.config,
     reader: env.reader,
   });
-  const actions = [...builtInActions, createFetchCopierAction({integrations, reader: env.reader, containerRunner})];
+  const actions = [
+    ...builtInActions, 
+    createFetchCopierAction({ integrations, reader: env.reader })
+  ];
+  
   return await createRouter({
-    containerRunner,
     catalogClient,
     actions,
     logger: env.logger,
@@ -60,8 +57,6 @@ export default async function createPlugin(
     scheduler: env.scheduler,
   });
 }
-
-
 ```
 
 After that you can use the action in your template:
@@ -130,7 +125,7 @@ spec:
       name: Fetch Base
       action: fetch:copier
       input:
-        url: ./template
+        url: "<complete url to template repo>"
         values:
           name: ${{ parameters.name }}
           owner: ${{ parameters.owner }}
@@ -147,14 +142,6 @@ spec:
         description: This is ${{ parameters.name }}
         repoUrl: ${{ parameters.repoUrl }}
 
-    - id: register
-      if: ${{ parameters.dryRun !== true }}
-      name: Register
-      action: catalog:register
-      input:
-        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
-        catalogInfoPath: '/catalog-info.yaml'
-
     - name: Results
       if: ${{ parameters.dryRun }}
       action: debug:log
@@ -165,22 +152,17 @@ spec:
     links:
       - title: Repository
         url: ${{ steps.publish.output.remoteUrl }}
-      - title: Open in catalog
-        icon: catalog
-        entityRef: ${{ steps.register.output.entityRef }}
 ```
 
 You can also visit the `/create/actions` route in your Backstage application to find out more about the parameters this action accepts when it's installed to configure how you like.
 
 ### Environment setup
 
-The environment needs to have either `copier` installed and be available in the `PATH` or access to a `docker` daemon so it can spin up a docker container with `copier` available.
-
-If you are running Backstage from a Docker container and you want to avoid calling a container inside a container, you can set up `copier` in your own image, this will use the local installation instead.
+While running Backstage from a Docker container, you need to have `copier` installed within your image.
 
 You can do so by including the following lines in the last step of your Dockerfile:
 
 ```dockerfile
-RUN apt-get update && apt-get install -y python3 python3-pip
-RUN pip3 install copier
+RUN apt-get update && apt-get install -y --no-install-recommends python3-pip
+RUN pip install --break-system-packages copier
 ```
