@@ -15,13 +15,11 @@
  */
 
 import {
-  ContainerRunner,
   UrlReader,
   resolveSafeChildPath,
 } from '@backstage/backend-common';
-import { JsonObject, JsonValue } from '@backstage/types';
+import { JsonObject } from '@backstage/types';
 import { ScmIntegrations } from '@backstage/integration';
-import commandExists from 'command-exists';
 import fs from 'fs-extra';
 import path, { resolve as resolvePath } from 'path';
 import { Writable } from 'stream';
@@ -32,32 +30,10 @@ import {
 } from '@backstage/plugin-scaffolder-node'
 
 export class CopierRunner {
-  private readonly containerRunner?: ContainerRunner;
-
-  constructor({ containerRunner }: { containerRunner?: ContainerRunner }) {
-    this.containerRunner = containerRunner;
-  }
-
-  private async fetchTemplateCopier(
-    directory: string,
-  ): Promise<Record<string, JsonValue>> {
-    try {
-      return await fs.readJSON(path.join(directory, 'copier.json'));
-    } catch (ex) {
-      if (typeof ex === "object" && ex && "code" in ex && ex.code !== 'ENOENT') {
-        throw ex;
-      }
-
-      return {};
-    }
-  }
-
   public async run({
     workspacePath,
     values,
     logStream,
-    imageName,
-    templateDir,
     templateContentsDir,
   }: {
     workspacePath: string;
@@ -70,29 +46,6 @@ export class CopierRunner {
     const intermediateDir = path.join(workspacePath, 'intermediate');
     await fs.ensureDir(intermediateDir);
     const resultDir = path.join(workspacePath, 'result');
-
-    // First lets grab the default copier.json file
-    const copierJson = await this.fetchTemplateCopier(
-      templateContentsDir,
-    );
-
-    const copierInfo = {
-      ...copierJson,
-      ...values,
-    };
-
-    await fs.writeJSON(path.join(templateDir, 'copier.json'), copierInfo);
-
-    // Directories to bind on container
-    const mountDirs = {
-      [templateDir]: '/input',
-      [intermediateDir]: '/output',
-    };
-
-    // the command-exists package returns `true` or throws an error
-    const copierInstalled = await commandExists('copier').catch(
-      () => false,
-    );
 
     let copierValues: string[] = []
     console.log(values) 
@@ -107,31 +60,12 @@ export class CopierRunner {
       copierValues.push("--data")
       copierValues.push(key + "=" + value)
     }
-    const templateSource = templateDir+"/copier"
     const projectDestination = intermediateDir+"/copier"
-    if (copierInstalled) {
-      await executeShellCommand({
-        command: 'copier',
-        args: ['copy', ...copierValues, templateSource, projectDestination, '--trust'],
-        logStream,
-      });
-    } else {
-      if (this.containerRunner === undefined) {
-        throw new Error(
-          'Invalid state: containerRunner cannot be undefined when copier is not installed',
-        );
-      }
-
-      await this.containerRunner.runContainer({
-        imageName: imageName ?? 'tobiasestefors/copier:7.0.1',
-        command: 'copier',
-        args: [...copierValues, '/input', '/output'],
-        mountDirs, 
-        workingDir: '/input',
-        envVars: { HOME: '/tmp' },
-        logStream,
-      });
-    }
+    await executeShellCommand({
+      command: 'copier',
+      args: ['copy', ...copierValues, templateContentsDir, projectDestination, '--trust'],
+      logStream,
+    });
 
     const [generated] = await fs.readdir(intermediateDir);
     console.log(generated)
@@ -155,9 +89,8 @@ export class CopierRunner {
 export function createFetchCopierAction(options: {
   reader: UrlReader;
   integrations: ScmIntegrations;
-  containerRunner?: ContainerRunner;
 }) {
-  const { reader, containerRunner, integrations } = options;
+  const { reader, integrations } = options;
 
   return createTemplateAction<{
     url: string;
@@ -203,6 +136,7 @@ export function createFetchCopierAction(options: {
       ctx.logger.info('Fetching and then templating using copier');
       const workDir = await ctx.createTemporaryDirectory();
       const templateDir = resolvePath(workDir, 'template');
+      const templateUrl = ctx.input.url;
       const templateContentsDir = resolvePath(
         templateDir,
         "copier", 
@@ -217,7 +151,7 @@ export function createFetchCopierAction(options: {
         outputPath: templateContentsDir,
       });
 
-      const copier = new CopierRunner({ containerRunner });
+      const copier = new CopierRunner();
       const values = {
         ...ctx.input.values 
       };
@@ -228,7 +162,7 @@ export function createFetchCopierAction(options: {
         values: values,
         imageName: ctx.input.imageName,
         templateDir: templateDir,
-        templateContentsDir: templateContentsDir,
+        templateContentsDir: templateUrl,
       });
 
       const targetPath = ctx.input.targetPath ?? './';
