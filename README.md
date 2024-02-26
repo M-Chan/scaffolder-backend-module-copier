@@ -158,7 +158,7 @@ You can also visit the `/create/actions` route in your Backstage application to 
 
 ### Environment setup
 
-While running Backstage from a Docker container, you need to have `copier` installed within your image.
+The environment needs to have `copier` installed and be available in the `PATH`.
 
 You can do so by including the following lines in the last step of your Dockerfile:
 
