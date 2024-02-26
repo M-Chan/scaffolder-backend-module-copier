@@ -10,7 +10,7 @@ You need to configure the action in your backend:
 
 ```bash
 # From your Backstage root directory
-yarn add --cwd packages/backend https://github.com/DiamondLightSource/scaffolder-backend-module-copier.git
+yarn add --cwd packages/backend @diamondlightsource/plugin-scaffolder-backend-module-copier
 ```
 
 Configure the action within `packages/backend/src/plugins/scaffolder.ts`:
