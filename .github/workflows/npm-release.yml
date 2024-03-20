@@ -9,7 +9,19 @@ on:
     - '*'
 
 jobs:
+  build: 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18
+          cache: 'yarn'
+          registry-url: https://registry.npmjs.org
+      - run: yarn tsc
+      - run: yarn build
   publish:
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: read
