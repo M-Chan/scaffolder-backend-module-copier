@@ -21,7 +21,7 @@ jobs:
     - name: Install yarn dependencies
       run: yarn install
     - name: Compile code
-      uses: icrawl/action-tsc@v1
+      run: yarn tsc
     - name: Build package
       run: yarn build
 
