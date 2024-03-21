@@ -23,6 +23,7 @@
     "@backstage/errors": "^1.2.3",
     "@backstage/integration": "^1.9.0",
     "@backstage/plugin-scaffolder-backend": "^1.20.0",
+    "@backstage/plugin-scaffolder-node-test-utils": "^0.1.0",
     "@backstage/types": "^1.1.1",
     "@types/command-exists": "^1.2.3",
     "@types/fs-extra": "^11.0.4",
@@ -43,6 +44,6 @@
     "msw": "^2.1.2"
   },
   "files": [
-    "src"
+    "dist"
   ]
 }

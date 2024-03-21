@@ -27,7 +27,8 @@ import os from 'os';
 import { PassThrough } from 'stream';
 import { createFetchCopierAction } from './copier';
 import { join } from 'path';
-import type { ActionContext } from '@backstage/plugin-scaffolder-backend';
+import type { ActionContext } from '@backstage/plugin-scaffolder-node';
+import { createMockActionContext } from '@backstage/plugin-scaffolder-node-test-utils';
 
 const executeShellCommand = jest.fn();
 const commandExists = jest.fn();
@@ -88,6 +89,7 @@ describe('fetch:copier', () => {
     jest.resetAllMocks();
 
     mockContext = {
+      ...createMockActionContext(),
       input: {
         url: 'https://google.com/cookie/cutter',
         targetPath: 'something',
