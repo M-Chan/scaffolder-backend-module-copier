@@ -16,9 +16,9 @@
 
 import {
   getVoidLogger,
-  UrlReader,
   ContainerRunner,
 } from '@backstage/backend-common';
+import { UrlReaderService } from '@backstage/backend-plugin-api';
 import { ConfigReader } from '@backstage/config';
 import { JsonObject } from '@backstage/types';
 import { ScmIntegrations } from '@backstage/integration';
@@ -74,7 +74,7 @@ describe('fetch:copier', () => {
     runContainer: jest.fn(),
   };
 
-  const mockReader: UrlReader = {
+  const mockReader: UrlReaderService = {
     readUrl: jest.fn(),
     readTree: jest.fn(),
     search: jest.fn(),
