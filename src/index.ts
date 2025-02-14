@@ -20,4 +20,4 @@
  * @packageDocumentation
  */
 
-export * from './actions';
+export { scaffolderModule as default } from './module';
