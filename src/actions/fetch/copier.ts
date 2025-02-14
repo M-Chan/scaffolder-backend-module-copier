@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  UrlReader,
-  resolveSafeChildPath,
-} from '@backstage/backend-common';
+import { resolveSafeChildPath } from '@backstage/backend-plugin-api';
+import { UrlReaderService } from '@backstage/backend-plugin-api';
 import { JsonObject } from '@backstage/types';
 import { ScmIntegrations } from '@backstage/integration';
 import fs from 'fs-extra';
@@ -48,7 +46,7 @@ export class CopierRunner {
     const resultDir = path.join(workspacePath, 'result');
 
     let copierValues: string[] = []
-    console.log(values) 
+    console.log(values)
     let destValues = values['destination']
     delete values['destination']
     console.log("destValues:", destValues)
@@ -87,7 +85,7 @@ export class CopierRunner {
  * @public
  */
 export function createFetchCopierAction(options: {
-  reader: UrlReader;
+  reader: UrlReaderService;
   integrations: ScmIntegrations;
 }) {
   const { reader, integrations } = options;
@@ -139,7 +137,7 @@ export function createFetchCopierAction(options: {
       const templateUrl = ctx.input.url;
       const templateContentsDir = resolvePath(
         templateDir,
-        "copier", 
+        "copier",
       );
       const resultDir = resolvePath(workDir, 'result');
 
@@ -153,12 +151,12 @@ export function createFetchCopierAction(options: {
 
       const copier = new CopierRunner();
       const values = {
-        ...ctx.input.values 
+        ...ctx.input.values
       };
 
       await copier.run({
         workspacePath: workDir,
-        logStream: ctx.logStream,
+        logStream: ctx.logger,
         values: values,
         imageName: ctx.input.imageName,
         templateDir: templateDir,
